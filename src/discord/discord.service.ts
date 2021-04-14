@@ -2,80 +2,92 @@ import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { ReadDiscordDto } from './dto/read-discord.dto';
 import { UpdateDiscordDto } from './dto/update-discord.dto';
 import { CreateDiscordDto } from './dto/create-discord.dto';
+import { InjectModel } from '@nestjs/mongoose';
+import {
+  Discorduser,
+  DiscorduserDocument,
+  Socials,
+} from './schemas/discorduser.schema';
+import { Model } from 'mongoose';
 
 @Injectable()
 export class DiscordService {
+  constructor(
+    @InjectModel(Discorduser.name)
+    private DiscorduserModel: Model<DiscorduserDocument>,
+  ) {}
+
   private discord: ReadDiscordDto[] = [];
-  create(createDiscordDto: CreateDiscordDto) {
-    const discordUser = {
-      id: Date.now(),
-      username: createDiscordDto.username,
-      bio: createDiscordDto.bio,
-      socials: { ...createDiscordDto.socials },
-      createdOn: new Date(Date.now()),
-      updatedOn: new Date(Date.now()),
-    };
-    if (!discordUser.username) {
+
+  async create(createDiscordDto: CreateDiscordDto): Promise<Discorduser> {
+    if (!createDiscordDto.username) {
       throw new HttpException('Incomplete Data', HttpStatus.BAD_REQUEST);
     }
-    this.discord.push(discordUser);
-    return 'User added successfully!';
+    const createdDiscorduser = new this.DiscorduserModel(createDiscordDto);
+    return createdDiscorduser.save();
   }
 
-  findAll() {
-    return [...this.discord];
+  async findAll(): Promise<DiscorduserDocument[]> {
+    return this.DiscorduserModel.find().exec();
   }
 
-  findOne(id: number) {
-    const discordUser = this.discord.find((user) => user.id === id);
+  async findOne(id: string): Promise<DiscorduserDocument> {
+    const discordUser = await this.DiscorduserModel.findById(id).exec();
     if (!discordUser) {
       throw new HttpException('User Not Found', HttpStatus.NOT_FOUND);
     }
-    return { ...discordUser };
+    return discordUser;
   }
 
-  update(id: number, updateDiscordDto: UpdateDiscordDto) {
+  async update(id: string, updateDiscordDto: UpdateDiscordDto) {
     const { username, bio, socials } = updateDiscordDto;
 
-    const discordUser = this.discord.find((user) => user.id === id);
-    if (!discordUser) {
-      throw new HttpException('User Not Found', HttpStatus.NOT_FOUND);
-    }
-    const updatedDiscord = { ...discordUser };
+    const updateObject = new Discorduser();
+    const updateSocials = new Socials();
+
     if (username) {
-      updatedDiscord.username = username;
+      updateObject.username = username;
     }
     if (bio) {
-      updatedDiscord.bio = bio;
+      updateObject.bio = bio;
     }
 
     if (socials && socials.discord) {
-      updatedDiscord.socials.discord = socials.discord;
+      updateSocials.discord = socials.discord;
     }
     if (socials && socials.twitter) {
-      updatedDiscord.socials.twitter = socials.twitter;
+      updateSocials.twitter = socials.twitter;
     }
     if (socials && socials.linkedin) {
-      updatedDiscord.socials.linkedin = socials.linkedin;
+      updateSocials.linkedin = socials.linkedin;
     }
     if (socials && socials.github) {
-      updatedDiscord.socials.github = socials.github;
+      updateSocials.github = socials.github;
     }
+    updateObject.socials = updateSocials;
 
-    const index = this.discord.findIndex(
-      (discordUser) => discordUser.id === id,
+    const updated = await this.DiscorduserModel.findByIdAndUpdate(
+      id,
+      updateObject,
+      { new: true, useFindAndModify: false },
     );
-    this.discord[index] = updatedDiscord;
-
-    return 'User updated successfully!';
-  }
-
-  remove(id: number) {
-    const updatedDiscord = this.discord.filter((user) => user.id !== id);
-    if (!updatedDiscord) {
+    if (!updated) {
       throw new HttpException('User Not Found', HttpStatus.NOT_FOUND);
     }
-    this.discord = [...updatedDiscord];
-    return 'User deleted successfully!';
+
+    return updated;
+  }
+
+  async remove(id: string) {
+    // const updatedDiscord = this.discord.filter((user) => user.id !== id);
+    const deleteItem = await this.DiscorduserModel.findByIdAndRemove(id, {
+      useFindAndModify: false,
+    });
+
+    if (!deleteItem) {
+      throw new HttpException('User Not Found', HttpStatus.NOT_FOUND);
+    }
+    // this.discord = [...updatedDiscord];
+    return { message: 'Item deleted successfully' };
   }
 }

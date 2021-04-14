@@ -29,16 +29,16 @@ export class DiscordController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.discordService.findOne(+id);
+    return this.discordService.findOne(id);
   }
 
   @Put(':id')
   update(@Param('id') id: string, @Body() updateDiscordDto: UpdateDiscordDto) {
-    return this.discordService.update(+id, updateDiscordDto);
+    return this.discordService.update(id, updateDiscordDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.discordService.remove(+id);
+  async remove(@Param('id') id: string) {
+    return await this.discordService.remove(id);
   }
 }
