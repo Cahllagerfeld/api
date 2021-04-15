@@ -18,23 +18,26 @@ export class DiscordController {
   constructor(private readonly discordService: DiscordService) {}
 
   @Post()
-  create(@Body() createDiscordDto: CreateDiscordDto) {
-    return this.discordService.create(createDiscordDto);
+  async create(@Body() createDiscordDto: CreateDiscordDto) {
+    return await this.discordService.create(createDiscordDto);
   }
 
   @Get()
-  findAll() {
-    return this.discordService.findAll();
+  async findAll() {
+    return await this.discordService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.discordService.findOne(id);
+  async findOne(@Param('id') id: string) {
+    return await this.discordService.findOne(id);
   }
 
   @Put(':id')
-  update(@Param('id') id: string, @Body() updateDiscordDto: UpdateDiscordDto) {
-    return this.discordService.update(id, updateDiscordDto);
+  async update(
+    @Param('id') id: string,
+    @Body() updateDiscordDto: UpdateDiscordDto,
+  ) {
+    return await this.discordService.update(id, updateDiscordDto);
   }
 
   @Delete(':id')
