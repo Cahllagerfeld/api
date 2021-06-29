@@ -16,6 +16,7 @@ import { StandupDTO } from './dto/standup.dto';
 import { StandupService } from './standup.service';
 
 @ApiTags('Standup')
+@ApiHeader({ name: 'Keyspace', required: true })
 @Controller('standup')
 export class StandupController {
   constructor(private readonly standupService: StandupService) {}

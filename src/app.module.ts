@@ -10,6 +10,7 @@ import { LoggerMiddleware } from './logger/logger.middleware';
 import { CalendarModule } from './calendar/calendar.module';
 import { AstraModule } from '@cahllagerfeld/nestjs-astra';
 import { AstraConfigService } from './astra/astra-config.service';
+import { ApprovedKeyspacesMiddleware } from './auth/approved-keyspaces.middleware';
 
 @Module({
   imports: [
@@ -31,5 +32,6 @@ import { AstraConfigService } from './astra/astra-config.service';
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(LoggerMiddleware).forRoutes('/');
+    consumer.apply(ApprovedKeyspacesMiddleware).forRoutes('/');
   }
 }
